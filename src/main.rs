@@ -2,9 +2,6 @@
 
 #![feature(const_fn)]
 
-//use num_derive::FromPrimitive;
-//#[derive(Debug)]
-
 use core::cell::Cell;
 
 pub struct ListLink<'a, T: 'a + ?Sized>(Cell<Option<&'a T>>);
@@ -82,67 +79,21 @@ impl<'a, T: ?Sized + ListNode<'a, T>> List<'a, T> {
 }
 
 /** Test Implementation **/
-
-// Funky trait
-
-pub trait Funky<'a> {
-    fn name(&self) -> &'static str;
-    fn next_funky_thing(&'a self) -> &'a ListLink<'a, Funky<'a>>;
-}
-
-impl<'a> ListNode<'a, Funky<'a>> for Funky<'a> {
-    fn next(&'a self) -> &'a ListLink<'a, Funky<'a>> {
-        println!("Next");
-        &self.next_funky_thing()
-    }
-}
-
-// Thing that is Funky
-
 pub struct Jazz<'a> {
-    next: ListLink<'a, Funky<'a>>,
+    next: ListLink<'a, Jazz<'a>>,
 }
 
 impl<'a> Jazz<'a> {
-    pub fn new() -> Self {
+    pub const fn new() -> Self { // TODO remove `const`
         Jazz {
             next: ListLink::empty(),
         }
     }
 }
 
-impl<'a> Funky<'a> for Jazz<'a> {
-    fn name(&self) -> &'static str {
-        "Jazz"
-    }
-
-    fn next_funky_thing(&'a self) -> &'a ListLink<'a, Funky<'a>> {
-        println!("Next Funky Thing");
+impl<'a> ListNode<'a, Jazz<'a>> for Jazz<'a> {
+    fn next(&'a self) -> &'a ListLink<'a, Jazz<'a>> {
         &self.next
-    }
-}
-
-// Manager of Funky Things
-
-pub struct Manager<'a> {
-    funky_things: List<'a, Funky<'a>>,
-}
-
-impl<'a> Manager<'a> {
-    pub fn new() -> Manager<'a> {
-        Manager {
-            funky_things: List::new(),
-        }
-    }
-
-    pub fn manage(&mut self, thing: &'a (Funky<'a>)) {
-        self.funky_things.push_head(thing);
-    }
-
-    pub fn report(&self) {
-        for t in self.funky_things.iter() {
-            println!("Funky thing: {}", t.name());
-        }
     }
 }
 
@@ -150,16 +101,38 @@ impl<'a> Manager<'a> {
 
 fn main() {
 
-    let jazz = Jazz::<'static>::new();
+    /*{
+        let jazz = Box::leak(Box::new(Jazz::new()));
+        let list = List::<'static, Jazz<'static>>::new();
+        println!("Head of empty: {}", list.head.0.get().is_some());
+        list.push_head(jazz);
+        println!("Head of one: {}", list.head.0.get().is_some());
+    }*/
 
-    //let list = List::<Funky>::new();
-    
-    //println!("List head: {:?}", list.head());
+    {
+        let list = List::new();
+        let jazz = Jazz::new();
+        println!("Head of empty: {}", list.head.0.get().is_some());
+        list.push_head(&jazz);
+        println!("Head of one: {}", list.head.0.get().is_some());
+    }
 
-    //static NODE0: i32 = 2;
+    /*{
+        let (jazz, list) = (
+            Jazz::new(),
+            List::new()
+        );
+        println!("Head of empty: {}", list.head.0.get().is_some());
+        list.push_head(&jazz);
+        println!("Head of one: {}", list.head.0.get().is_some());
+    }*/
 
-    //list.push_head(&NODE0);
-
-    //println!("List head: {:?}", list.head());
+    /*{
+        static mut jazz: Jazz<'static> = Jazz::new();
+        let list = List::<'static, Jazz<'static>>::new();
+        println!("Head of empty: {}", list.head.0.get().is_some());
+        list.push_head(unsafe { &jazz });
+        println!("Head of one: {}", list.head.0.get().is_some());
+    }*/
 
 }
