@@ -1,138 +1,88 @@
-//! Linked list implementation.
+//! Linked list test/verification harness. 
 
-#![feature(const_fn)]
+extern crate list_lib;
+use list_lib::{List, ListLink, ListNode};
 
-use core::cell::Cell;
-
-pub struct ListLink<'a, T: 'a + ?Sized>(Cell<Option<&'a T>>);
-
-impl<'a, T: ?Sized> ListLink<'a, T> {
-    pub const fn empty() -> ListLink<'a, T> {
-        ListLink(Cell::new(None))
-    }
+pub struct Link<'a> {
+    next: ListLink<'a, Link<'a>>,
 }
 
-pub trait ListNode<'a, T: ?Sized> {
-    fn next(&'a self) -> &'a ListLink<'a, T>;
-}
-
-pub struct List<'a, T: 'a + ?Sized + ListNode<'a, T>> {
-    head: ListLink<'a, T>,
-}
-
-pub struct ListIterator<'a, T: 'a + ?Sized + ListNode<'a, T>> {
-    cur: Option<&'a T>,
-}
-
-impl<'a, T: ?Sized + ListNode<'a, T>> Iterator for ListIterator<'a, T> {
-    type Item = &'a T;
-
-    fn next(&mut self) -> Option<&'a T> {
-        match self.cur {
-            Some(res) => {
-                self.cur = res.next().0.get();
-                Some(res)
-            }
-            None => None,
-        }
-    }
-}
-
-impl<'a, T: ?Sized + ListNode<'a, T>> List<'a, T> {
-    pub const fn new() -> List<'a, T> {
-        List {
-            head: ListLink(Cell::new(None)),
-        }
-    }
-
-    pub fn head(&self) -> Option<&'a T> {
-        self.head.0.get()
-    }
-
-    pub fn push_head(&self, node: &'a T) {
-        node.next().0.set(self.head.0.get());
-        self.head.0.set(Some(node));
-    }
-
-    pub fn push_tail(&self, node: &'a T) {
-        node.next().0.set(None);
-        match self.iter().last() {
-            Some(last) => last.next().0.set(Some(node)),
-            None => self.push_head(node),
-        }
-    }
-
-    pub fn pop_head(&self) -> Option<&'a T> {
-        let remove = self.head.0.get();
-        match remove {
-            Some(node) => self.head.0.set(node.next().0.get()),
-            None => self.head.0.set(None),
-        }
-        remove
-    }
-
-    pub fn iter(&self) -> ListIterator<'a, T> {
-        ListIterator {
-            cur: self.head.0.get(),
-        }
-    }
-}
-
-/** Test Implementation **/
-pub struct Jazz<'a> {
-    next: ListLink<'a, Jazz<'a>>,
-}
-
-impl<'a> Jazz<'a> {
-    pub const fn new() -> Self { // TODO remove `const`
-        Jazz {
+impl<'a> Link<'a> {
+    pub fn new() -> Self {
+        Link {
             next: ListLink::empty(),
         }
     }
 }
 
-impl<'a> ListNode<'a, Jazz<'a>> for Jazz<'a> {
-    fn next(&'a self) -> &'a ListLink<'a, Jazz<'a>> {
+impl<'a> ListNode<'a, Link<'a>> for Link<'a> {
+    fn next(&'a self) -> &'a ListLink<'a, Link<'a>> {
         &self.next
     }
 }
 
-/** MAIN **/
+/**
+ * When using the linked list implementation, we run into the problem of a 
+ * possible dangling pointer when `push_head()` takes in a `link` reference
+ * if `link`'s lifetime is less than that of `list`. 
+ *
+ * Even if we do not use this dangling pointer, we must appease the compiler 
+ * by ensuring that `link` lives at least as long as `list`. The following 
+ * four blocks explore four different ways of doing this. 
+ *
+ * While we have only presented four methods, it is very likely that more exist. 
+ **/
 
 fn main() {
 
+    // Never deallocates `link`'s memory so that any "dangling" pointer will 
+    // still point to a valid memory region. 
+
     /*{
-        let jazz = Box::leak(Box::new(Jazz::new()));
-        let list = List::<'static, Jazz<'static>>::new();
-        println!("Head of empty: {}", list.head.0.get().is_some());
-        list.push_head(jazz);
-        println!("Head of one: {}", list.head.0.get().is_some());
+        let link = Box::leak(Box::new(Link::new()));
+        let list = List::<'static, Link<'static>>::new();
+        println!("Head of empty: {}", list.head().is_some());
+        list.push_head(link);
+        println!("Head of one: {}", list.head().is_some());
     }*/
+
+    // Allocates both list and link such that their lifetimes are the same. 
 
     {
         let list = List::new();
-        let jazz = Jazz::new();
-        println!("Head of empty: {}", list.head.0.get().is_some());
-        list.push_head(&jazz);
-        println!("Head of one: {}", list.head.0.get().is_some());
+        let link = Link::new();
+        println!("Head of empty: {}", list.head().is_some());
+        list.push_head(&link);
+        println!("Head of one: {}", list.head().is_some());
     }
 
-    /*{
-        let (jazz, list) = (
-            Jazz::new(),
-            List::new()
-        );
-        println!("Head of empty: {}", list.head.0.get().is_some());
-        list.push_head(&jazz);
-        println!("Head of one: {}", list.head.0.get().is_some());
-    }*/
+    // Allocates both list and link such that their lifetimes are the same. 
+    // This syntax would be useful if allocating `list` and `link` on two 
+    // different lines (as done above) resulted in two different lifetimes. 
+    // This no longer seems to be the case in Rust, however, so this more 
+    // convoluted syntax is no longer necessary. 
 
     /*{
-        static mut jazz: Jazz<'static> = Jazz::new();
-        let list = List::<'static, Jazz<'static>>::new();
-        println!("Head of empty: {}", list.head.0.get().is_some());
-        list.push_head(unsafe { &jazz });
-        println!("Head of one: {}", list.head.0.get().is_some());
+        let (link, list) = (
+            Link::new(),
+            List::new()
+        );
+        println!("Head of empty: {}", list.head().is_some());
+        list.push_head(&link);
+        println!("Head of one: {}", list.head().is_some());
+    }*/
+
+    // Forces both `link` and `list` into 'static lifetimes, and accesses 
+    // the `link` reference through an unsafe block. The `new()` method in 
+    // `ListLink` would also have to be `const`, which is undesireable for 
+    // more complicated functionality. - why? TODO
+
+    /*{
+        static mut link: Link<'static> = Link::new();
+        let list = List::<'static, Link<'static>>::new();
+        println!("Head of empty: {}", list.head().is_some());
+        list.push_head(unsafe { &link });
+        println!("Head of one: {}", list.head().is_some());
     }*/
 
 }

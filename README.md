@@ -1,17 +1,37 @@
 # Verifying Tock with Serval
 
-## Steps to run:
+## Setting up
 
-1. Clone [Tock](https://github.com/tock/tock)
+1. Clone [Serval](https://github.com/uw-unsat/serval) and install
 
-2. `rustup install nightly-2019-10-17`
+2. Clone [Tock](https://github.com/tock/tock)
 
-3. Add Tock's home dir to env under name TOCK_ROOT
+3. `rustup install nightly-2019-10-17`
 
-    a. Add 'export TOCK_ROOT="/path/to/tock/directory"' to ~/.bash_profile
+4. Add Tock's root directory to your environment under the name TOCK_ROOT: 
+
+    a. `echo 'export TOCK_ROOT="/path/to/tock/directory"' >> ~/.bash_profile
 
     b. `source ~/.bash_profile`
 
-4. Clone [Serval](https://github.com/uw-unsat/serval) and install it + dependencies
+5. Create a library package for the respective files in Tock that we want to 
+   verify so that we can import them into our harness. The following are the 
+   instructions for creating a library package from `list.rs`: 
 
-5. Return to 'tock-verif' dir to run `make verify`
+    a. From TOCK_ROOT: `cd kernel/src/common`
+
+    b. `cargo new list_lib --lib`
+
+    c. `cp list.rs list_lib/src/lib.rs`
+
+    d. Can now import into harness with: 
+
+        `extern crate list_lib;`
+        `use list_lib::{List, ListLink, ListNode};`
+
+
+6. Return to the 'tock-verif' directory to run. Currently, the harness works 
+   best with: 
+
+        `cargo build`
+        `cargo run` 
