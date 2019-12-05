@@ -10,7 +10,7 @@
 
 4. Add Tock's root directory to your environment under the name TOCK_ROOT: 
 
-    a. `echo 'export TOCK_ROOT="/path/to/tock/directory"' >> ~/.bash_profile
+    a. `echo 'export TOCK_ROOT="/path/to/tock/directory"' >> ~/.bash_profile`
 
     b. `source ~/.bash_profile`
 
@@ -26,12 +26,12 @@
 
     d. Can now import into harness with: 
 
-        `extern crate list_lib;`
-        `use list_lib::{List, ListLink, ListNode};`
+        extern crate list_lib;
+        use list_lib::{List, ListLink, ListNode};
 
 
 6. Return to the 'tock-verif' directory to run. Currently, the harness works 
    best with: 
 
-        `cargo build`
-        `cargo run` 
+        cargo build
+        cargo run
