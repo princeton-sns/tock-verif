@@ -1,34 +1,37 @@
 LLVM_ROSETTE ?= racket $(shell ./find-serval.rkt)/serval/bin/serval-llvm.rkt
+#TOCK_ROOT ?= `echo ${TOCK_ROOT}`
+#LIST_LIB ?= $(TOCK_ROOT)/kernel/src/common/list_lib
 
-all: tock.ll.rkt
+all: tockverif.ll.rkt
 
-simple: src/main.rs
-	rustc --edition=2018 --crate-name tock $< -C opt-level=3 -C panic=abort -C debuginfo=1 --emit=obj -C relocation-model=static -C link-dead-code
+tockverif.o: src/main.rs
+	rustc --edition=2018 --crate-name tockverif $< --crate-type lib -C opt-level=3 -C panic=abort -C debuginfo=1 --emit=obj -C relocation-model=static -C link-dead-code
+#cargo rustc -- -v --emit=obj -C relocation-model=static -C link-dead-code -o $@
 
-tock.o: $(TOCK_ROOT)/kernel/src/common/list.rs
-	rustc --edition=2018 --crate-name tock $< --crate-type lib -C opt-level=3 -C panic=abort -C debuginfo=1 --emit=obj -C relocation-model=static -C link-dead-code
 
-tock.ll: $(TOCK_ROOT)/kernel/src/common/list.rs
-	rustc --edition=2018 --crate-name tock $< --crate-type lib -C opt-level=3 -C panic=abort -C debuginfo=0 -Clink-arg=-nostartfiles --emit=llvm-ir -C relocation-model=static -C link-dead-code
+tockverif.ll: src/main.rs
+	rustc --edition=2018 --crate-name tockverif $< --crate-type lib -C opt-level=3 -C panic=abort -C debuginfo=0 -Clink-arg=-nostartfiles --emit=llvm-ir -C relocation-model=static -C link-dead-code
+#cargo rustc -- -v --emit=llvm-ir -C relocation-model=static -C link-dead-code
 
-tock.map: tock.o
+tockverif.map: tockverif.o
 	nm -S -C --size-sort $< > $@
 	#nm --print-size --numeric-sort $< > $@
 
-tock.map.rkt: tock.map
+tockverif.map.rkt: tockverif.map
 	echo "#lang reader serval/lang/nm" > $@ && \
 		cat $< >> $@
 
-tock.globals.rkt: tock.o
+tockverif.globals.rkt: tockverif.o
 	echo "#lang reader serval/lang/dwarf" > $@
 	objdump --dwarf=info $< >> $@
 
-tock.ll.rkt: tock.ll
+tockverif.ll.rkt: tockverif.ll
 	$(LLVM_ROSETTE) < $< > $@
 
-verify: tock.ll.rkt tock.globals.rkt tock.map.rkt
+verify: tockverif.ll.rkt tockverif.globals.rkt tockverif.map.rkt
 	raco test spec.rkt
 
 .PHONY: clean
 clean:
-	rm -rf tock.ll tock.ll.rkt tock.o tock.map tock.map.rkt tock.globals.rkt
+	rm -rf tockverif.ll tockverif.ll.rkt tockverif.o tockverif.map tockverif.map.rkt tockverif.globals.rkt
+	cargo clean
