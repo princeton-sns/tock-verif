@@ -30,10 +30,10 @@ impl<'a> ListNode<'a, Link<'a>> for Link<'a> {
 
 #[inline(never)]
 #[no_mangle]
-fn init() -> u32 {
+fn init() -> i32 {
 
     let list = List::<'_, Link<'_>>::new();
-    list.iter().count() as u32
+    list.iter().count() as i32
 
 }
 /*

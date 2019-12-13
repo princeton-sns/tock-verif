@@ -79,8 +79,10 @@
 ; Unit tests to run the refinement
 (define test-tests
   (test-suite+ "Test LLVM tests"
-	(test-case+ "init_head"
-		(verify-llvm-refinement spec-init-head program:@init-head (list (make-arg i32))))
+	(test-case+ "init"
+		(verify-llvm-refinement spec-init program:@init (list (make-arg i32))))
+	;(test-case+ "init_head"
+	;	(verify-llvm-refinement spec-init-head program:@init-head (list (make-arg i32))))
 	;(test-case+ "init_tail"
 	;	(verify-llvm-refinement spec-init-tail program:@init-tail (list (make-arg i32))))
 ))
