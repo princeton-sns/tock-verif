@@ -36,29 +36,31 @@ fn init() -> i32 {
     list.iter().count() as i32
 
 }
-/*
+
 #[inline(never)]
 #[no_mangle]
-fn init_head() -> u32 {
+fn init_head() -> i32 {
 
     let list = List::new();
     let link = Link::new();
     list.push_head(&link);
-    list.iter().count() as u32
+    1
+    //list.iter().count() as i32 FIXME casting is problematic maybe find another way to get size
 
 }
 
 #[inline(never)]
 #[no_mangle]
-fn init_tail() -> usize {
+fn init_tail() -> i32 {
 
     let list = List::new();
     let link = Link::new();
     list.push_tail(&link);
-    list.iter().count()
+    1
+    //list.iter().count() as i32
 
 }
-*/
+
 /*
  * When using the linked list implementation, we run into the problem of a 
  * possible dangling pointer when `push_head()` takes in a `link` reference

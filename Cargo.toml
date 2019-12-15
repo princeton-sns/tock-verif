@@ -6,9 +6,6 @@ edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[dependencies]
-#list_lib = { path = "/Users/np/hack/tock/tock/kernel/src/common/list_lib" } # FIXME brittle
-
 [profile.dev]
 opt-level = 3
 debug = true
