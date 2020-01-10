@@ -7,19 +7,19 @@
 /* Linked list-specific code */
 /*****************************/
 
-/*mod list;
+mod list;
 use list::{List, ListLink, ListNode};
 
 pub struct Link<'a> {
     next: ListLink<'a, Link<'a>>,
-    //value: i32,
+    value: i32,
 }
 
 impl<'a> Link<'a> {
-    pub const fn new() -> Self {
+    pub const fn new(val: i32) -> Self {
         Link {
             next: ListLink::empty(),
-            //value: val,
+            value: val,
         }
     }
 }
@@ -47,7 +47,7 @@ fn push_head() -> u64 {
     unsafe { LINKLIST.len = new_size };
     new_size
 
-}*/
+}
 
 /**************************/
 /* TakeCell-specific code */
@@ -70,7 +70,7 @@ fn take() -> Option<&'static mut [u8]> {
 /* Static ref-specific code */
 /*********************************/
 
-mod static_ref;
+/*mod static_ref;
 use static_ref::{StaticRef};
 use core::ops::Deref;
 
@@ -86,7 +86,7 @@ fn deref() -> u64 {
 
     unsafe { *STATICREF.deref() }
 
-}
+}*/
 
 /*
  * When using the linked list implementation, we run into the problem of a 
