@@ -1,19 +1,25 @@
-//! Linked list verification harness. 
+//! Serval verification harness. 
 
 #![feature(const_fn)]
 #![no_std]
+
+/*****************************/
+/* Linked list-specific code */
+/*****************************/
 
 mod list;
 use list::{List, ListLink, ListNode};
 
 pub struct Link<'a> {
     next: ListLink<'a, Link<'a>>,
+    //value: i32,
 }
 
 impl<'a> Link<'a> {
     pub const fn new() -> Self {
         Link {
             next: ListLink::empty(),
+            //value: val,
         }
     }
 }
@@ -24,42 +30,63 @@ impl<'a> ListNode<'a, Link<'a>> for Link<'a> {
     }
 }
 
-/*
- * Functions to verify. 
- */
-
-#[inline(never)]
 #[no_mangle]
-fn init() -> i32 {
+static mut LINKLIST: LinkList = LinkList {
+    len: 3,
+};
 
-    let list = List::<'_, Link<'_>>::new();
-    list.iter().count() as i32
-
+struct LinkList {
+    len: u64,
 }
 
 #[inline(never)]
 #[no_mangle]
-fn init_head() -> i32 {
+fn push_head() -> u64 {
 
-    let list = List::new();
-    let link = Link::new();
-    list.push_head(&link);
-    1
-    //list.iter().count() as i32 FIXME casting is problematic maybe find another way to get size
+    let new_size = unsafe { LINKLIST.len + 1 };
+    unsafe { LINKLIST.len = new_size };
+    new_size
 
 }
+
+/**************************/
+/* TakeCell-specific code */
+/**************************/
+
+/*mod take_cell;
+use take_cell::{TakeCell};
+
+static mut TAKECELL: TakeCell<'static, [u8]> = TakeCell::empty();
 
 #[inline(never)]
 #[no_mangle]
-fn init_tail() -> i32 {
+fn take() -> Option<&'static mut [u8]> {
 
-    let list = List::new();
-    let link = Link::new();
-    list.push_tail(&link);
-    1
-    //list.iter().count() as i32
+    unsafe { TAKECELL.take() }
 
-}
+}*/
+
+/*********************************/
+/* Static ref-specific code */
+/*********************************/
+
+/*mod static_ref;
+use static_ref::{StaticRef};
+use core::ops::Deref;
+
+#[no_mangle]
+pub static NPTINSTANCE: u64 = 0; 
+
+#[no_mangle]
+pub static mut STATICREF: StaticRef<u64> = unsafe { StaticRef::new(&NPTINSTANCE) };
+
+#[inline(never)]
+#[no_mangle]
+fn deref() -> u64 {
+
+    unsafe { *STATICREF.deref() }
+
+}*/
 
 /*
  * When using the linked list implementation, we run into the problem of a 

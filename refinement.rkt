@@ -12,13 +12,34 @@
   (prefix-in program: "./tockverif.globals.rkt")
 )
 
-(provide (all-defined-out))
+(provide refinement-tests)
 
 ; The abstraction function is just the identity function because we're
 ; currently using the LLVM `machine` type as the state type for the spec as
 ; well as the implementation
 (define (abs-function m)
-  (spec:state (machine-retval m))
+
+  ; Get list of implementation memory regions
+  (define mreg (machine-mregions m))
+  (define mret (machine-retval m))
+
+  ; Find block containing global var LINKLIST
+  ;(define linklist-block (find-block-by-name mreg '_ZN9tockverif8LINKLIST17h3dceffa7fef1528eE))
+  (define linklist-block (find-block-by-name mreg 'LINKLIST))
+  (define linklist (mblock-iload linklist-block (list)))
+
+  ; Find block containing global var TAKECELL
+  ;(define cell-block (find-block-by-name mreg '_ZN9tockverif8TAKECELL17h88c16070ac92c299E))
+  ;(define cell (mblock-iload cell-block (list)))
+
+  ; Find block containing global var STATICREF
+  (define staticref-block (find-block-by-name mreg '_ZN9tockverif9STATICREF17h1c694fd28c190db1E))
+  (define staticref (mblock-iload staticref-block (list)))
+
+  ; Construct specification state
+  ;(spec:state mret linklist)
+  ;(spec:state mret cell)
+  (spec:state mret linklist staticref)
 )
 
 ; This is basically copied from the certikos LLVM verifier, so I'm not 100%
@@ -32,7 +53,7 @@
       ; OK, call `func` by passing in each of the elements in `args` as a
       ; separate argument
       (define result (apply func args))
-      ; Store the result of the function as the machine's retvalv field
+      ; Store the result of the function as the machine's retval field
       (set-machine-retval! m result))))
 
 ; Representation invariant:
@@ -44,27 +65,32 @@
 ; Refine for an LLVM machine
 (define (verify-llvm-refinement spec-func impl-func [args null])
   (define implmachine (make-machine program:symbols program:globals)) ; `machine` state used for impl
-  (define specstate (spec:state (make-bv64))) ; specification state
+
   (verify-refinement
     #:implstate implmachine
     #:impl (make-machine-func impl-func) ; go from LLVM function to machine function
-    #:specstate specstate
+    #:specstate (spec:fresh-state) ;specstate
     #:spec spec-func
     #:abs abs-function ; abstraction function
     #:ri rep-invariant
     args))
 
 ; Unit tests to run the refinement
-(define test-tests
-  (test-suite+ "Test LLVM tests"
-	(test-case+ "init"
-		(verify-llvm-refinement spec:init program:@init (list)))
-	(test-case+ "init_head"
-		(verify-llvm-refinement spec:init-head program:@init_head (list)))
-	(test-case+ "init_tail"
-		(verify-llvm-refinement spec:init-tail program:@init_tail (list)))
-))
+(define refinement-tests
+  (test-suite+ "Linked list LLVM tests"
+        (test-case+ "push_head() -> increments size by 1"
+        	(verify-llvm-refinement spec:push-head program:@push_head (list)))
+  )
+  ;(test-suite+ "TakeCell LLVM tests"
+  ;      (test-case+ "take() on empty cell -> None"
+  ;      	(verify-llvm-refinement spec:take program:@take (list)))
+  ;)
+  ;(test-suite+ "StaticRef LLVM tests"
+  ;      (test-case+ "deref() -> 0"
+  ;      	(verify-llvm-refinement spec:deref program:@deref (list)))
+  ;)
+)
 
 (module+ test
- (time (run-tests test-tests)))
+ (time (run-tests refinement-tests)))
 
