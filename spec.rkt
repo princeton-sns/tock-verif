@@ -11,10 +11,9 @@
 (provide (all-defined-out))
 
 (struct linklist (len) #:mutable #:transparent)
-;(struct nonprimtype (val) #:mutable #:transparent)
 (struct staticref (nonprimtype) #:mutable #:transparent)
 
-(struct state (retval linklist staticref) #:mutable #:transparent)
+(struct state (retval linklist cell staticref) #:mutable #:transparent)
 
 (define (fresh-state)
 
@@ -23,13 +22,12 @@
   (define-symbolic* len (bitvector 64))
   (define linklisk len)
 
-  ;(define-symbolic* cell (bitvector 64)) ;boolean?)
+  (define-symbolic* cell (bitvector 64)) ;boolean?)
 
-  ;(define-symbolic* val (bitvector 64))
   (define nonprimtype (bitvector 64));val)
   (define staticref nonprimtype)
 
-  (state retval linklist staticref))
+  (state retval linklist cell staticref))
 
 (define (push-head s len)
 
@@ -44,13 +42,9 @@
 
   (state retval linklist staticref))
 
-;(define (take)
-;
-;  (define retval (state-retval))
-;
-;  (define cell (state-cell))
-;
-;  (state retval cell))
+(define (take)
+
+  (state-cell))
 
 (define (deref)
 

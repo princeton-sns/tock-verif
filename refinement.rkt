@@ -24,13 +24,12 @@
   (define mret (machine-retval m))
 
   ; Find block containing global var LINKLIST
-  ;(define linklist-block (find-block-by-name mreg '_ZN9tockverif8LINKLIST17h3dceffa7fef1528eE))
   (define linklist-block (find-block-by-name mreg 'LINKLIST))
   (define linklist (mblock-iload linklist-block (list)))
 
   ; Find block containing global var TAKECELL
-  ;(define cell-block (find-block-by-name mreg '_ZN9tockverif8TAKECELL17h88c16070ac92c299E))
-  ;(define cell (mblock-iload cell-block (list)))
+  (define cell-block (find-block-by-name mreg 'TAKECELL))
+  (define cell (mblock-iload cell-block (list)))
 
   ; Find block containing global var STATICREF
   (define staticref-block (find-block-by-name mreg '_ZN9tockverif9STATICREF17h1c694fd28c190db1E))
@@ -77,14 +76,14 @@
 
 ; Unit tests to run the refinement
 (define refinement-tests
-  (test-suite+ "Linked list LLVM tests"
-        (test-case+ "push_head() -> increments size by 1"
-        	(verify-llvm-refinement spec:push-head program:@push_head (list)))
-  )
-  ;(test-suite+ "TakeCell LLVM tests"
-  ;      (test-case+ "take() on empty cell -> None"
-  ;      	(verify-llvm-refinement spec:take program:@take (list)))
+  ;(test-suite+ "Linked list LLVM tests"
+  ;      (test-case+ "push_head() -> increments size by 1"
+  ;      	(verify-llvm-refinement spec:push-head program:@push_head (list)))
   ;)
+  (test-suite+ "TakeCell LLVM tests"
+        (test-case+ "take() on empty cell -> None"
+        	(verify-llvm-refinement spec:take program:@take (list)))
+  )
   ;(test-suite+ "StaticRef LLVM tests"
   ;      (test-case+ "deref() -> 0"
   ;      	(verify-llvm-refinement spec:deref program:@deref (list)))

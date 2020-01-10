@@ -7,7 +7,7 @@
 /* Linked list-specific code */
 /*****************************/
 
-mod list;
+/*mod list;
 use list::{List, ListLink, ListNode};
 
 pub struct Link<'a> {
@@ -47,15 +47,16 @@ fn push_head() -> u64 {
     unsafe { LINKLIST.len = new_size };
     new_size
 
-}
+}*/
 
 /**************************/
 /* TakeCell-specific code */
 /**************************/
 
-/*mod take_cell;
+mod take_cell;
 use take_cell::{TakeCell};
 
+#[no_mangle]
 static mut TAKECELL: TakeCell<'static, [u8]> = TakeCell::empty();
 
 #[inline(never)]
@@ -64,7 +65,7 @@ fn take() -> Option<&'static mut [u8]> {
 
     unsafe { TAKECELL.take() }
 
-}*/
+}
 
 /*********************************/
 /* Static ref-specific code */
